@@ -35,8 +35,8 @@ preprocess = transforms.Compose([
 ])
 
 # Loading an image from the local filesystem using Pillow
-img = Image.open("images/bobby.jpg")
-# img.show()
+img = Image.open("images/ryan.jpg")
+img.show()
 
 # Passing image through our preprocessing pipeline
 img_t = preprocess(img)
@@ -73,9 +73,7 @@ percentage = torch.nn.functional.softmax(out, 1)[0] * 100
 # we can use the sort function, which sorts the values
 # in ascending or descending order and also provides the indices of the sorted values in the original array
 _, indices = torch.sort(out, descending=True)
-# for el in [(labels[idx], percentage[idx].item()) for idx in indices[0][:5]]:
-#     print(el)
-
-
+for el in [(labels[idx], percentage[idx].item()) for idx in indices[0][:5]]:
+    print(el)
 
 
