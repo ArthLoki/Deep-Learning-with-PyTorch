@@ -49,7 +49,7 @@ class Chapter2:
         ])
 
         # Loading an image from the local filesystem using Pillow
-        img = Image.open(f"{self.base_path}/dlwpt_code/data/p1ch2/bobby.jpg")
+        img = Image.open(f"{self.base_path}/dlwpt-code/data/p1ch2/bobby.jpg")
         # img.show()
 
         # Passing image through our preprocessing pipeline
@@ -68,7 +68,7 @@ class Chapter2:
         out = resnet_eval(batch_t)  # Returns a tensor of 1000 scores
 
         # load the file containing the 1000 labels for the ImageNet dataset classes
-        with open(f"{self.base_path}/dlwpt_code/data/p1ch2/imagenet_classes.txt") as f:
+        with open(f"{self.base_path}/dlwpt-code/data/p1ch2/imagenet_classes.txt") as f:
             labels = [line.strip() for line in f.readlines()]
 
         # Using the max function in PyTorch, which outputs the maximum value in a tensor as well as the indices where
@@ -97,7 +97,7 @@ class Chapter2:
 
         # load those weights into ResNetGenerator using the model’s
         # load_state_dict method
-        model_path = f"{self.base_path}/dlwpt_code/data/p1ch2/horse2zebra_0.4.0.pth"
+        model_path = f"{self.base_path}/dlwpt-code/data/p1ch2/horse2zebra_0.4.0.pth"
         model_data = torch.load(model_path)
         netG.load_state_dict(model_data)
 
@@ -113,10 +113,7 @@ class Chapter2:
                                         ])
 
         # Loading a random image of a horse
-        # img = Image.open(f"{self.base_path}/dlwpt_code/data/p1ch2/horse.jpg")
-        img = Image.open(
-            f'{self.base_path}/Deep-Learning-with-PyTorch/images/horse2zebra-dataset/testA/n02381460_20.jpg'
-        )
+        img = Image.open(f"{self.base_path}/dlwpt-code/data/p1ch2/horse.jpg")
         # img.show()
 
         # Preprocessing horse image and turning it into a properly shaped variable
@@ -138,10 +135,10 @@ class Chapter2:
 def main():
     chapter2 = Chapter2()
 
-    # print(torch.cuda.is_available())
+    print(torch.cuda.is_available())
 
-    # chapter2.identifyingDogs()
-    # chapter2.horse2zebra()
+    chapter2.identifyingDogs()
+    chapter2.horse2zebra()
     return
 
 
