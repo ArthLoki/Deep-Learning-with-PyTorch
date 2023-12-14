@@ -23,31 +23,66 @@ class Chapter3:
         return
 
     def img2GreyScale(self):
-        resnet = models.resnet101(pretrained=True)
-        preprocess = transforms.Compose([
-            transforms.Resize(256),  # Resizes the image scaling the input image to 256x256
-            transforms.CenterCrop(224),  # Crops the image to 224x224 around the center
-            transforms.ToTensor(),  # transforms it into a tensor
-            transforms.Normalize(  # Normalize its RGB components so that they have defines
-                # means and standards deviations
-                mean=[0.485, 0.456, 0],
-                std=[0.229, 0.224, 0.225]
-            )
-        ])
-        img = Image.open(f"{self.base_path}/dlwpt-code/data/p1ch2/bobby.jpg")
+        # Loading image from local filesystem
+        # img = Image.open(f"{self.base_path}/dlwpt-code/data/p1ch2/bobby.jpg")
 
         # we want to converto the image to grey scale
         img_t = torch.randn(3, 5, 5)  # shape [channel, rows, columns]
-        weigths = torch.tensor([0.2126, 0.7152, 0.0722])
+        weights = torch.tensor([0.2126, 0.7152, 0.0722])
+
+        # want our code to generalize—for example, from grayscale images represented
+        # as 2D tensors with height and width dimensions to color images adding a third
+        # channel dimension (as in RGB), or from a single image to a batch of images
         batch_t = torch.randn(2, 3, 5, 5)  # shape [batch, channel, rows, columns]
 
+        # sometimes the RGB channels are in dimension 0, and sometimes they are in dimension
+        # 1. But we can generalize by counting from the end: they are always in dimension
+        # –3, the third from the end
         img_gray_naive = img_t.mean(-3)
         batch_gray_naive = batch_t.mean(-3)
-        print(img_gray_naive.shape, batch_gray_naive.shape)
+        # print(img_gray_naive.shape, batch_gray_naive.shape)
+
+        # multiply things that are the
+        # same shape, as well as shapes where one operand is of size 1 in a given dimension
+        # It also appends leading dimensions of size 1 automatically. It's called broadcasting
+        unsqueezed_weights = weights.unsqueeze(-1).unsqueeze_(-1)
+
+        # batch_t of shape (2, 3, 5, 5) is multiplied by unsqueezed_weights of shape (3,
+        # 1, 1), resulting in a tensor of shape (2, 3, 5, 5), from which we can then sum the third
+        # dimension from the end (the three channels)
+        img_weights = (img_t * unsqueezed_weights)
+        batch_weights = (batch_t * unsqueezed_weights)
+
+        # img_grey_weighted = img_weights.sum(-3)
+        # batch_grey_weighted = batch_weights.sum(-3)
+        # print(batch_weights.shape, batch_t.shape, unsqueezed_weights.shape)
+
+        # the PyTorch function
+        # einsum (adapted from NumPy) specifies an indexing mini-language giving index
+        # names to dimensions for sums of such products
+        img_gray_weighted_fancy = torch.einsum('...chw,c->...hw', img_t, weights)
+        batch_gray_weighted_fancy = torch.einsum('...chw,c->...hw', batch_t, weights)
+        # print(batch_gray_weighted_fancy.shape)
+
+        weights_named = torch.tensor(data=[0.2126, 0.7152, 0.0722], names=['channels'])
+        # print(weights_named)
+
+        img_named = img_t.refine_names(..., 'channels', 'rows', 'columns')
+        batch_named = batch_t.refine_names(..., 'channels', 'rows', 'columns')
+        print("img named:", img_named.shape, img_named.names)
+        print("batch named:", batch_named.shape, batch_named.names)
+
+        # two inputs, in addition to the usual dimension checks—whether
+        # sizes are the same, or if one is 1 and can be broadcast to the other
+        weights_aligned = weights_named.align_as(img_named)
+        gray_named = (img_named * weights_aligned).sum('channels')
         return
+
 
 def main():
     chapter3 = Chapter3()
+
+    print(torch.cuda.is_available())
 
     # chapter3.firstTensor()
     chapter3.img2GreyScale()
