@@ -135,10 +135,10 @@ class Chapter2:
 def main():
     chapter2 = Chapter2()
 
-    print(torch.cuda.is_available())
+    # print(torch.cuda.is_available())
 
     chapter2.identifyingDogs()
-    chapter2.horse2zebra()
+    # chapter2.horse2zebra()
     return
 
 
