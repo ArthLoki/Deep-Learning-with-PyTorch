@@ -1,9 +1,7 @@
-from torchvision import models, transforms
-from PIL import Image
 import torch
-import torch.nn as nn
-from cyclegan import ResNetGenerator
 from getPath import get_base_path
+from cpu2cuda import print_device_timer, timer_data, get_cuda_device_data
+# from cpu2cuda import get_device, get_device_name, get_device_data, check_device_change, dev2dev
 
 class Chapter3:
     def __init__(self, tensor_dim=0):
@@ -14,7 +12,7 @@ class Chapter3:
 
     def firstTensor(self):
         points = torch.tensor([[4.0, 1.0], [5.0, 3.0],[2.0, 1.0]])
-        print(points)
+        # print(points)
 
         # Slice
         # print(points[1:])
@@ -101,18 +99,36 @@ class Chapter3:
 
         points_64 = torch.rand(5, dtype=torch.double)
         points_short = points_64.to(dtype=torch.short)
-        print(points_64 * points_short)  # works from PyTorch 1.3 onwards
+        # print(points_64 * points_short)  # works from PyTorch 1.3 onwards
         return
 
     def tensorAPI(self):
         # transpose (example 1)
         a = torch.ones(3, 2)
         a_t1 = torch.transpose(a, 0, 1)
-        print(f'Transpose of tensor: {a.shape}  ---------->  {a_t1.shape}')
+        # print(f'\nTranspose of tensor: {a.shape}  ---------->  {a_t1.shape}')
 
         # transpose (example 2)
         a_t2 = a.transpose(0, 1)
-        print(f'Transpose of tensor: {a.shape}  ---------->  {a_t2.shape}')
+        # print(f'\nTranspose of tensor: {a.shape}  ---------->  {a_t2.shape}')
+
+        # Transposing without copying: using t function, a shorthand alternative to transpose function for 2D tensors
+        points = torch.tensor([[4.0, 1.0], [5.0, 3.0], [2.0, 1.0]])
+
+        points_t = points.t()
+
+#         print(f'\n{points}\n')
+#         print(f'\n{points_t}\n')
+#         print(f'\n{id(points.storage()) == id(points_t.storage())}\n')
+#
+#         print(f'''\npoints:\n\t-> stride: {points.stride()}\n\t-> shape: {points.shape}\n
+# points_t:\n\t-> stride: {points_t.stride()}\n\t-> shape: {points_t.shape}\n''')
+
+        # transposing in higher dimensions
+        some_t = torch.ones(3, 4, 5)
+        transpose_t = some_t.transpose(0, 2)
+        print(f'''\nsome_t:\n\t-> shape: {some_t.shape}\n\t-> stride: {some_t.stride()}\n
+transpose_t:\n\t-> shape: {transpose_t.shape}\n\t-> stride: {transpose_t.stride()}''')
         return
 
     def indexingStorage(self):
@@ -122,37 +138,31 @@ class Chapter3:
 
         second_point = points[1].clone()
         second_point[0] = 10.0
-        print(points)
+        # print(points)
         return
 
 
     def modifyingStoredValues(self):
         a = torch.ones(3, 2)
-        print(a)
+        # print(a)
         a.zero_()
-        print(a)
+        # print(a)
         return
 
 
 def main():
     chapter3 = Chapter3()
 
-    # print(torch.cuda.is_available())
-
-    # chapter3.firstTensor()
-    # chapter3.img2GreyScale()
-    # chapter3.tensorDataTypes()
-    # chapter3.tensorAPI()
+    chapter3.firstTensor()
+    chapter3.img2GreyScale()
+    chapter3.tensorDataTypes()
+    chapter3.tensorAPI()
     chapter3.indexingStorage()
-    # chapter3.modifyingStoredValues()
-
-    # Testing Cuda
-    # print(torch.cuda.is_available())
-    # print(torch.cuda.get_device_name(0))
-    # print(torch.cuda.current_device())  # gets the index of the current device
-    # print(torch.device('cuda'))
+    chapter3.modifyingStoredValues()
     return
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    timer_data(main)
+    # get_cuda_device_data()

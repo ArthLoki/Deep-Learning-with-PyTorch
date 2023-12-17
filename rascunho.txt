@@ -1,0 +1,4 @@
+    # print('\nDEVICE')
+    # print(f'cuda available: {torch.cuda.is_available()}')
+    # print(f'id current device: {torch.cuda.current_device()}')
+    # print(f'name current device: {torch.cuda.get_device_name(torch.cuda.current_device())}\n\n')
