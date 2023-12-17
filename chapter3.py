@@ -9,6 +9,7 @@ class Chapter3:
     def __init__(self, tensor_dim=0):
         self.tensor_dim = tensor_dim
         self.base_path = get_base_path()
+        self.dev_code = 1  # Default: Running on CPU. OBS: code == 0 => running on GPU/cuda
         pass
 
     def firstTensor(self):
@@ -69,24 +70,87 @@ class Chapter3:
 
         img_named = img_t.refine_names(..., 'channels', 'rows', 'columns')
         batch_named = batch_t.refine_names(..., 'channels', 'rows', 'columns')
-        print("img named:", img_named.shape, img_named.names)
-        print("batch named:", batch_named.shape, batch_named.names)
+        # print("img named:", img_named.shape, img_named.names)
+        # print("batch named:", batch_named.shape, batch_named.names)
 
         # two inputs, in addition to the usual dimension checks—whether
         # sizes are the same, or if one is 1 and can be broadcast to the other
+        # The method align_as returns a tensor with missing dimensions
+        # added and existing ones permuted to the right order
         weights_aligned = weights_named.align_as(img_named)
+        # print(weights_aligned.shape, weights_aligned.names)
+
+        # Functions accepting dimension arguments, like sum, also take named dimensions
         gray_named = (img_named * weights_aligned).sum('channels')
+        # print(gray_named.shape, gray_named.names)
+
+        gray_plain = gray_named.rename(None)
+        # print(gray_plain.shape, gray_plain.names)
+        return
+
+    def tensorDataTypes(self):
+        double_points = torch.ones(10, 2, dtype=torch.double)
+        short_points = torch.tensor([[1, 2], [3, 4]], dtype=torch.short)
+        # print(short_points.dtype, double_points)
+
+        double_points_cast = torch.zeros(10, 2).double()
+        short_points_cast = torch.ones(10, 2).short()
+
+        double_points_toMethod = torch.ones(10, 2).to(torch.double)
+        short_points_toMethod = torch.ones(10, 2).to(dtype=torch.short)
+
+        points_64 = torch.rand(5, dtype=torch.double)
+        points_short = points_64.to(dtype=torch.short)
+        print(points_64 * points_short)  # works from PyTorch 1.3 onwards
+        return
+
+    def tensorAPI(self):
+        # transpose (example 1)
+        a = torch.ones(3, 2)
+        a_t1 = torch.transpose(a, 0, 1)
+        print(f'Transpose of tensor: {a.shape}  ---------->  {a_t1.shape}')
+
+        # transpose (example 2)
+        a_t2 = a.transpose(0, 1)
+        print(f'Transpose of tensor: {a.shape}  ---------->  {a_t2.shape}')
+        return
+
+    def indexingStorage(self):
+        points = torch.tensor([[4.0, 1.0], [5.0, 3.0], [2.0, 1.0]])
+        points_storage = points.storage()  # always return one-dimensional array/list of storage data
+        points_storage[0] = 2.0  # It changes the value in the tensor just like a list/array
+
+        second_point = points[1].clone()
+        second_point[0] = 10.0
+        print(points)
+        return
+
+
+    def modifyingStoredValues(self):
+        a = torch.ones(3, 2)
+        print(a)
+        a.zero_()
+        print(a)
         return
 
 
 def main():
     chapter3 = Chapter3()
 
-    print(torch.cuda.is_available())
+    # print(torch.cuda.is_available())
 
     # chapter3.firstTensor()
-    chapter3.img2GreyScale()
+    # chapter3.img2GreyScale()
+    # chapter3.tensorDataTypes()
+    # chapter3.tensorAPI()
+    chapter3.indexingStorage()
+    # chapter3.modifyingStoredValues()
 
+    # Testing Cuda
+    # print(torch.cuda.is_available())
+    # print(torch.cuda.get_device_name(0))
+    # print(torch.cuda.current_device())  # gets the index of the current device
+    # print(torch.device('cuda'))
     return
 
 

@@ -1,9 +1,7 @@
 import os
 
-
 def get_current_path():
     return os.getcwd().replace('\\', '/')
-
 
 def get_base_path():
     og_path = get_current_path()
