@@ -117,6 +117,9 @@ class Chapter3:
 
         points_t = points.t()
 
+        print(points.is_contiguous())
+        print(points_t.is_contiguous())
+
 #         print(f'\n{points}\n')
 #         print(f'\n{points_t}\n')
 #         print(f'\n{id(points.storage()) == id(points_t.storage())}\n')
@@ -153,12 +156,12 @@ transpose_t:\n\t-> shape: {transpose_t.shape}\n\t-> stride: {transpose_t.stride(
 def main():
     chapter3 = Chapter3()
 
-    chapter3.firstTensor()
-    chapter3.img2GreyScale()
-    chapter3.tensorDataTypes()
+    # chapter3.firstTensor()
+    # chapter3.img2GreyScale()
+    # chapter3.tensorDataTypes()
     chapter3.tensorAPI()
-    chapter3.indexingStorage()
-    chapter3.modifyingStoredValues()
+    # chapter3.indexingStorage()
+    # chapter3.modifyingStoredValues()
     return
 
 
