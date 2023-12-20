@@ -37,7 +37,7 @@ def get_device_name(code=1):
 
 def get_device(code=1):
     dev_name = get_device_name(code)
-    device = ''
+    device = 'cpu'  # default device
 
     if dev_name != '':
         device = torch.device(dev_name)
@@ -53,9 +53,9 @@ def get_device_data(tensor):
 def dev2dev(tensor, code):
     print('\nASSIGNMENT: CHANGING DEVICE')
     device = get_device(code)
-    assignment = tensor.to(device)
+    assignment = tensor.to(device=device)
     get_device_data(assignment)
-    return
+    return assignment
 
 
 def check_device_change(tensor, code):
@@ -63,8 +63,9 @@ def check_device_change(tensor, code):
     get_device_data(tensor)
 
     print('\nNEW DEVICE')
-    dev2dev(tensor, code)
+    _ = dev2dev(tensor, code)
     return
+
 
 # TIMER
 

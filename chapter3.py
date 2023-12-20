@@ -106,26 +106,34 @@ class Chapter3:
         # transpose (example 1)
         a = torch.ones(3, 2)
         a_t1 = torch.transpose(a, 0, 1)
-        # print(f'\nTranspose of tensor: {a.shape}  ---------->  {a_t1.shape}')
+        # print(a.stride(), a_t1.stride())
+        # print(f'Transpose of tensor: {a.shape}  ---------->  {a_t1.shape}\n')
 
         # transpose (example 2)
         a_t2 = a.transpose(0, 1)
-        # print(f'\nTranspose of tensor: {a.shape}  ---------->  {a_t2.shape}')
+        # print(a_t2.stride())
+        # print(f'Transpose of tensor: {a.shape}  ---------->  {a_t2.shape}')
 
         # Transposing without copying: using t function, a shorthand alternative to transpose function for 2D tensors
         points = torch.tensor([[4.0, 1.0], [5.0, 3.0], [2.0, 1.0]])
 
         points_t = points.t()
 
-        print(points.is_contiguous())
-        print(points_t.is_contiguous())
+        '''
+        Stride is the jump necessary to go from one element to the next one in the specified dimension dim. 
+        A tuple of all strides is returned when no argument is passed in. Otherwise, an integer value is returned 
+        as the stride in the particular dimension dim
+        '''
+
+        # print(points.is_contiguous())
+        # print(points_t.is_contiguous())
 
 #         print(f'\n{points}\n')
 #         print(f'\n{points_t}\n')
 #         print(f'\n{id(points.storage()) == id(points_t.storage())}\n')
 #
-#         print(f'''\npoints:\n\t-> stride: {points.stride()}\n\t-> shape: {points.shape}\n
-# points_t:\n\t-> stride: {points_t.stride()}\n\t-> shape: {points_t.shape}\n''')
+        print(f'''\npoints:\n\t-> stride: {points.stride()}\n\t-> shape: {points.shape}\n
+points_t:\n\t-> stride: {points_t.stride()}\n\t-> shape: {points_t.shape}\n''')
 
         # transposing in higher dimensions
         some_t = torch.ones(3, 4, 5)
