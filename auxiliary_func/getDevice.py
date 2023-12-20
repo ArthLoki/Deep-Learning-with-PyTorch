@@ -19,7 +19,7 @@ def get_cuda_device_data():
     return
 
 
-def get_device_name(code=1):
+def get_device_name(code=-1):
     dev_name = ''
     if torch.cuda.is_available():
         if code == 0:
@@ -51,7 +51,7 @@ def dev2dev(tensor, code):
     print('\nASSIGNMENT: CHANGING DEVICE')
     device = get_device(code)
     assignment = tensor.to(device=device)
-    get_device_data(assignment)
+    # get_device_data(assignment)
     return assignment
 
 
@@ -60,5 +60,6 @@ def check_device_change(tensor, code):
     get_device_data(tensor)
 
     print('\nNEW DEVICE')
-    _ = dev2dev(tensor, code)
+    tensor_change = dev2dev(tensor, code)
+    get_device_data(tensor_change)
     return

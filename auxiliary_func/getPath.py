@@ -12,3 +12,9 @@ def get_base_path():
     for i in range(1, len(l_path)-1):
         base_path += f'/{l_path[i]}'
     return base_path
+
+
+def get_chapter_data_path(num_part, num_chapter):
+    base_path = get_base_path()
+    data_path = f'{base_path}/dlwpt-code/data/p{num_part}ch{num_chapter}'
+    return data_path

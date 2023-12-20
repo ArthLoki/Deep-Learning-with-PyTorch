@@ -1,7 +1,7 @@
 import torch
 from auxiliary_func.getPath import get_base_path
-# from auxiliary_func.getDevice import dev2dev
 from auxiliary_func.getTimer import timer_data
+from auxiliary_func.getDevice import get_device_name
 
 
 # from cpu2cuda import get_device, get_device_name, get_device_data, check_device_change, dev2dev
@@ -10,11 +10,12 @@ class Chapter3:
     def __init__(self, tensor_dim=0):
         self.tensor_dim = tensor_dim
         self.base_path = get_base_path()
-        self.dev_code = 1  # Default: Running on CPU. OBS: code == 0 => running on GPU/cuda
-        pass
+        self.dev_code = 0  # Default: code = -1 ==> Running on CPU. OBS: code = 0 => Running on GPU/cuda
+        self.dev_name = get_device_name(self.dev_code)
+        return
 
     def firstTensor(self):
-        points = torch.tensor([[4.0, 1.0], [5.0, 3.0],[2.0, 1.0]])
+        points = torch.tensor([[4.0, 1.0], [5.0, 3.0], [2.0, 1.0]], device=self.dev_name)
         # print(points)
 
         # Slice
@@ -30,7 +31,7 @@ class Chapter3:
 
         # we want to converto the image to grey scale
         img_t = torch.randn(3, 5, 5)  # shape [channel, rows, columns]
-        weights = torch.tensor([0.2126, 0.7152, 0.0722])
+        weights = torch.tensor([0.2126, 0.7152, 0.0722], device=self.dev_name)
 
         # want our code to generalize—for example, from grayscale images represented
         # as 2D tensors with height and width dimensions to color images adding a third
