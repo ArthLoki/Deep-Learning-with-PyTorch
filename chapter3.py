@@ -1,6 +1,9 @@
 import torch
-from getPath import get_base_path
-from cpu2cuda import print_device_timer, timer_data, get_cuda_device_data
+from auxiliary_func.getPath import get_base_path
+# from auxiliary_func.getDevice import dev2dev
+from auxiliary_func.getTimer import timer_data
+
+
 # from cpu2cuda import get_device, get_device_name, get_device_data, check_device_change, dev2dev
 
 class Chapter3:
