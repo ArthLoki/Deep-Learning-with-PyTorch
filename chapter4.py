@@ -70,27 +70,49 @@ class Chapter4:
         # have an extra dimension, depth, after the channel
         # dimension, leading to a 5D tensor of shape N × C × D × H × W
 
+        # Loading a specialized format
         # load a sample CT scan using the volread function in the imageio module, which
         # takes a directory as an argument and assembles all Digital Imaging and Communications
         # in Medicine (DICOM) files in a series in a NumPy 3D array
         dir_path = f'{self.base_path_data}/volumetric-dicom/2-LUNG 3.0  B70f-04083'
         vol_arr = imageio.volread(dir_path, 'DICOM')
         # print(vol_arr.shape)
+
+        # the layout is different from what PyTorch expects, due to
+        # having no channel information. we’ll have to make room for the channel dimension
+        # using unsqueeze
+        vol = torch.from_numpy(vol_arr).float()  # NumPy array to PyThorch tensor
+        vol = torch.unsqueeze(vol, 0)
+        print(vol.shape)
+
+        '''
+        When you are unsqueezing a tensor, it is ambiguous which dimension you wish to 'unsqueeze' it across 
+        (as a row or column etc). The dim argument dictates this - i.e. position of the new dimension to be added
+        
+        torch.unsqueeze(input, dim) → Tensor
+        '''
+
+        batch_size = vol.shape[0]
+        batch = torch.zeros(batch_size, *vol.shape[1:], device=self.dev_name)
+        vol = torch.unsqueeze(batch, 0)
+        print(vol.shape)
+
         return
 
-    def representing_tabular_data(self):
+    @staticmethod
+    def representing_tabular_data():
         # Loading a csv file and turning the result NumPy array into a PyTorch tensor
-        wine_path = f'{self.base_path_data}/tabular-wine/winequality-white.csv'
-        wineq_numpy = np.loadtxt(wine_path, dtype=np.float32, delimiter=";", skiprows=1)
+        # wine_path = f'{self.base_path_data}/tabular-wine/winequality-white.csv'
+        # wineq_numpy = np.loadtxt(wine_path, dtype=np.float32, delimiter=";", skiprows=1)
         # print(wineq_numpy)
 
         # check that all the data has been read
-        csv_wine = csv.reader(open(wine_path), delimiter=";")
-        col_list = next(csv_wine)
+        # csv_wine = csv.reader(open(wine_path), delimiter=";")
+        # col_list = next(csv_wine)
         # print(wineq_numpy.shape, col_list)
 
         # convert the NumPy array to a PyTorch tensor
-        wineq = torch.from_numpy(wineq_numpy)
+        # wineq = torch.from_numpy(wineq_numpy)
         # print(wineq.shape, wineq.dtype)
 
         # Representing Scores
@@ -98,16 +120,16 @@ class Chapter4:
         # we will typically remove the
         # score from the tensor of input data and keep it in a separate tensor, so that we can use
         # the score as the ground truth without it being input to our model
-        data = wineq[:, :-1]  # Selects all rows and all columns except the last
+        # data = wineq[:, :-1]  # Selects all rows and all columns except the last
         # print(data, data.shape)
 
-        target = wineq[:, -1]  # Selects all rows and the last column
+        # target = wineq[:, -1]  # Selects all rows and the last column
         # print(target, target.shape)
 
         # transform the target tensor in a tensor of labels, we have two options,
         # depending on the strategy or what we use the categorical data for
         # One is simply to treat labels as an integer vector of scores
-        target = wineq[:, -1].long()
+        # target = wineq[:, -1].long()
         # print(target)
 
         # If targets were string labels, like wine color, assigning an integer number to each string
@@ -117,18 +139,145 @@ class Chapter4:
 
         # We can achieve one-hot encoding using the scatter_ method, which fills the tensor
         # with values from a source tensor along the indices provided as arguments
-        target_onehot = torch.zeros(target.shape[0], 10)
+        # target_onehot = torch.zeros(target.shape[0], 10)
         # print(target_onehot)
-        target_onehot.scatter_(1, target.unsqueeze(1), 1.0)
-        print(target_onehot)
+        # target_onehot.scatter_(1, target.unsqueeze(1), 1.0)
+        # print(target_onehot)
+
+        '''
+        Let’s see what scatter_ does. First, we notice that its name ends with an underscore.
+        As you learned in the previous chapter, this is a convention in PyTorch that indicates
+        the method will not return a new tensor, but will instead modify the tensor in place.
+        The arguments for scatter_ are as follows:
+             The dimension along which the following two arguments are specified
+             A column tensor indicating the indices of the elements to scatter
+             A tensor containing the elements to scatter or a single scalar to scatter (1, in
+            this case)
+        
+        In other words, the previous invocation reads, “For each row, take the index of the target
+        label (which coincides with the score in our case) and use it as the column index
+        to set the value 1.0.” The end result is a tensor encoding categorical information.
+        
+        The second argument of scatter_, the index tensor, is required to have the same
+        number of dimensions as the tensor we scatter into. Since target_onehot has two
+        dimensions (4,898 × 10), we need to add an extra dummy dimension to target using
+        unsqueeze.
+        '''
+
+        # target_unsqueezed = target.unsqueeze(1)
+        # print(target_unsqueezed)
+
+        '''
+        The call to unsqueeze adds a singleton dimension, from a 1D tensor of 4,898 elements
+        to a 2D tensor of size (4,898 × 1), without changing its contents—no extra elements
+        are added; we just decided to use an extra index to access the elements. That is, we
+        access the first element of target as target[0] and the first element of its
+        unsqueezed counterpart as target_unsqueezed[0,0].
+        
+        PyTorch allows us to use class indices directly as targets while training neural networks.
+        However, if we wanted to use the score as a categorical input to the network, we
+        would have to transform it to a one-hot-encoded tensor.
+        '''
+
+        # When to categorize
+
+        # obtain the mean and standard deviations for each column
+        # dim=0 indicates that the reduction is performed along dimension 0
+        # we can normalize the data by subtracting the mean and dividing by the
+        # standard deviation, which helps with the learning process
+        # data_mean = torch.mean(data, dim=0)
+        # print(data_mean)
+
+        # data_var = torch.var(data, dim=0)
+        # print(data_var)
+
+        # data_normalized = (data - data_mean) / torch.sqrt(data_var)
+        # print(data_normalized)
+
+        # Finding thresholds
+
+        # determine which rows in
+        # target correspond to a score less than or equal to 3
+
+        # bad_indexes = target <= 3
+
+        # PyTorch also provides comparison functions, here torch.le(target, 3), but using operators seems to be a
+        # good standard
+        # print(bad_indexes.shape, bad_indexes.dtype, bad_indexes.sum())
+
+        # PyTorch called advanced indexing, we can use a tensor with data type torch.bool to
+        # index the data tensor
+        # This will essentially filter data to be only items (or rows) corresponding
+        # to True in the indexing tensor
+        # The bad_indexes tensor has the same shape as target, with values of False or True depending on
+        # the outcome of the comparison between our threshold and each element in the original target tensor
+
+        # bad_data = data[bad_indexes]
+        # print(bad_data.shape)
+
+        # the new bad_data tensor has 20 rows, the same as the number of rows with
+        # True in the bad_indexes tensor
+        # Now we can start to get information about wines grouped into good, middling, and bad categories
+        # taking the .mean() of each column
+        # bad_data = data[target <= 3]
+        # mid_data = data[(target > 3) & (target < 7)]
+        # good_data = data[target >= 7]
+        #
+        # bad_mean = torch.mean(bad_data, dim=0)
+        # mid_mean = torch.mean(mid_data, dim=0)
+        # good_mean = torch.mean(good_data, dim=0)
+
+        # for i, args in enumerate(zip(col_list, bad_mean, mid_mean, good_mean)):
+        #     print('{:2} {:20} {:6.2f} {:6.2f} {:6.2f}'.format(i, *args))
+
+        # the bad wines seem to have higher total sulfur dioxide, among other differences. We could use a threshold on
+        # total sulfur dioxide as a crude criterion for discriminating good wines from bad ones.
+        # Let’s get the indexes where the total sulfur dioxide column is below the midpoint we
+        # calculated earlier
+
+        total_sulfur_threshold = 141.83
+        total_sulfur_data = data[:, 6]
+        predicted_indexes = torch.lt(total_sulfur_data, total_sulfur_threshold)
+        print(predicted_indexes.shape, predicted_indexes.dtype, predicted_indexes.sum())
+
+        # This means our threshold implies that just over half of all the wines are going to be
+        # high quality. Next, we’ll need to get the indexes of the actually good wines
+
+        actual_indexes = target > 5
+        print(actual_indexes.shape, actual_indexes.dtype, actual_indexes.sum())
+
+        # We will perform a logical “and” between our
+        # prediction indexes and the actual good indexes (remember that each is just an array
+        # of zeros and ones) and use that intersection of wines-in-agreement to determine how
+        # well we did
+        n_matches = torch.sum(actual_indexes & predicted_indexes).item()
+        n_predicted = torch.sum(predicted_indexes).item()
+        n_actual = torch.sum(actual_indexes).item()
+        print(n_matches, n_matches / n_predicted, n_matches / n_actual)
         return
+
+    def working_with_time_series(self):
+        # Loading data from csv
+        bikes_numpy = np.loadtxt(
+            f'{self.base_path_data}/bike-sharing-dataset/hour-fixed.csv',
+            dtype=np.float32,
+            delimiter=',',
+            skiprows=1,
+            converters={1: lambda x: float(x[8:10])}
+            # converters converts date strings to numbers corresponding to the day of the month in column 1
+        )
+        bikes = torch.from_numpy(bikes_numpy)
+        print(bikes)
+        return
+
 
 def main():
     chapter4 = Chapter4()
 
     # chapter4.working_with_images()
-    # chapter4.volumetric_data_3d_image()  # Bugfix
-    chapter4.representing_tabular_data()
+    # chapter4.volumetric_data_3d_image()
+    # chapter4.representing_tabular_data()
+    chapter4.working_with_time_series()
 
     return
 
