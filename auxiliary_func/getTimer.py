@@ -12,7 +12,7 @@ def print_device_timer(start, end):
 
 
 def timer_data(func):
-    print('\n-----> START TIMER <-----')
+    print('\n-----> START TIMER <-----\n')
     start_time = get_timer()
 
     # param function here
