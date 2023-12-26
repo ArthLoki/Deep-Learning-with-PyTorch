@@ -271,7 +271,7 @@ class Chapter4:
 
         # let’s reshape the data to have 3 axes — day, hour, and then our 17 columns
         daily_bikes = bikes.view(-1, 24, bikes.shape[1])
-        print(daily_bikes.shape, daily_bikes.stride())  # OUTPUT: torch.Size([730, 24, 17]) (408, 17, 1)
+        # print(daily_bikes.shape, daily_bikes.stride())  # OUTPUT: torch.Size([730, 24, 17]) (408, 17, 1)
 
         # First, bikes.shape[1] is 17, the number of columns in the
         # bikes tensor. But the real crux of this code is the call to view, which is really important:
@@ -304,7 +304,32 @@ class Chapter4:
         # To get to our desired N × C × L ordering, we need to transpose the tensor
 
         daily_bikes = daily_bikes.transpose(1, 2)
-        print(daily_bikes.shape, daily_bikes.stride())
+        # print(daily_bikes.shape, daily_bikes.stride())
+
+        # In order to make it easier to render our data, we’re going to limit ourselves to the
+        # first day for a moment. We initialize a zero-filled matrix with a number of rows equal
+        # to the number of hours in the day and number of columns equal to the number of
+        # weather levels
+
+        first_day = bikes[:24].long()
+        # print(first_day.shape)  # OUTPUT: torch.Size([24, 17])
+        weather_onehot = torch.zeros(first_day.shape[0], 4)
+        # print(first_day[:, 9])
+
+        # Then we scatter ones into our matrix according to the corresponding level at each
+        # row. Remember the use of unsqueeze to add a singleton dimension as we did in the
+        # previous sections
+
+        weather_onehot.scatter_(
+            dim=1,
+            index=first_day[:, 9].unsqueeze(1).long() - 1,  # *OBS
+            value=1.0
+        )
+        # *OBS: Decreases the values by 1 because weather situation ranges from 1 to 4, while indices are 0-based
+
+        # we concatenate our matrix to our original dataset using the cat function
+        bikes = torch.cat((bikes[:24], weather_onehot), 1)
+        # print(bikes[:1])
         return
 
 
