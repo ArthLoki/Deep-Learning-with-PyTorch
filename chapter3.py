@@ -1,5 +1,5 @@
 import torch
-from auxiliary_func.getPath import get_base_path
+from ProjetoRedesNeurais.auxiliary_func.getPath import get_base_path
 from auxiliary_func.getTimer import timer_data
 from auxiliary_func.getDevice import get_device_name
 

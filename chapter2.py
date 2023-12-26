@@ -4,7 +4,7 @@ from PIL import Image
 import torch
 import torch.nn as nn
 from cyclegan import ResNetGenerator
-from auxiliary_func.getPath import get_base_path
+from ProjetoRedesNeurais.auxiliary_func.getPath import get_base_path
 
 
 class Chapter2:

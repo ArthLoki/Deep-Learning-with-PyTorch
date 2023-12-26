@@ -3,9 +3,9 @@ import csv
 import torch
 import numpy as np
 import imageio.v2 as imageio
-from auxiliary_func.getPath import get_base_path, get_chapter_data_path
-from auxiliary_func.getDevice import get_device_name, get_device_data
-from auxiliary_func.getTimer import timer_data
+from ProjetoRedesNeurais.auxiliary_func.getPath import get_base_path, get_chapter_data_path
+from ProjetoRedesNeurais.auxiliary_func.getDevice import get_device_name, get_device_data
+from ProjetoRedesNeurais.auxiliary_func.getTimer import timer_data
 
 '''
 WARNING:
@@ -332,6 +332,72 @@ class Chapter4:
         # print(bikes[:1])
         return
 
+    def clean_words(self, input_str):
+        punctuation = '.,;:"!?”“_-'
+        word_list = input_str.lower().replace('\n', ' ').split()
+        word_list = [word.strip(punctuation) for word in word_list]
+        return word_list
+
+    def representing_text(self):
+        # Loading text
+        with open(f'{self.base_path_data}/jane-austen/1342-0.txt', encoding='utf8') as f:
+            text = f.read()
+
+        # first split our text into a list of lines and pick an arbitrary line to focus on
+        lines = text.split('\n')
+        line = lines[200]
+        # print(line)
+
+        # create a tensor that can hold the total number of one-hot-encoded characters for
+        # the whole line
+        letter_t = torch.zeros(len(line), 128)  # 128 hardcoded due to the limits of ASCII
+        # print(letter_t.shape)
+
+        # letter_t holds a one-hot-encoded character per row
+        # we just have to
+        # set a one on each row in the correct position so that each row represents the correct
+        # character
+        # The index where the one has to be set corresponds to the index of the character
+        # in the encoding
+        for i, letter in enumerate(line.lower().strip()):
+            letter_index = ord(letter) if ord(letter) < 128 else 0
+            letter_t[i][letter_index] = 1
+
+        # The text uses directional double quotes, which are not valid ASCII,
+        # so we screen them out here
+
+        # define clean_words, which takes text and returns it in lowercase and
+        # stripped of punctuation
+        # we call it on our “Impossible, Mr. Bennet” line, we get
+        # the following
+
+        words_in_line = self.clean_words(line)
+        # print(line, words_in_line)
+
+        # let’s build a mapping of words to indexes in our encoding
+        word_list = sorted(set(self.clean_words(text)))
+        word2index_dict = {word: i for (i, word) in enumerate(word_list)}
+        # print(len(word2index_dict), word2index_dict['impossible'])
+        # print(word2index_dict)
+
+        # that word2index_dict is now a dictionary with words as keys and an integer as a
+        # value
+        # use it to efficiently find the index of a word as we one-hot encode it
+        # Let’s now focus on our sentence: we break it up into words and one-hot encode it—
+        # that is, we populate a tensor with one one-hot-encoded vector per word. We create an
+        # empty vector and assign the one-hot-encoded values of the word in the sentence
+        word_t = torch.zeros(len(words_in_line), len(word2index_dict))
+        for i, word in enumerate(words_in_line):
+            word_index = word2index_dict[word]
+            word_t[i][word_index] = 1
+            print('{:2} {:4} {}'.format(i, word_index, word))
+        # print(word_t.shape)
+
+        # tensor represents one sentence of length 11 in an encoding space of size
+        # 7,261, the number of words in our dictionary
+
+        return
+
 
 def main():
     chapter4 = Chapter4()
@@ -339,7 +405,8 @@ def main():
     # chapter4.working_with_images()
     # chapter4.volumetric_data_3d_image()
     # chapter4.representing_tabular_data()
-    chapter4.working_with_time_series()
+    # chapter4.working_with_time_series()
+    chapter4.representing_text()
 
     return
 
